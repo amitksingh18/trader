@@ -101,7 +101,36 @@ curl -X POST http://localhost:8080/webhook \
 - A Telegram message on your phone within a few seconds
 - A new row in `webhook_server/journal.csv`
 
-## 8. Optional: give Claude your real Groww holdings (read-only)
+## 8. Optional: log every alert to Google Sheets
+
+By default, alerts are logged to a local `journal.csv` file only. To also
+have every alert appear as a row in a Google Sheet you can open from any
+device:
+
+1. Go to https://console.cloud.google.com/ → create a project (or use an
+   existing one)
+2. **APIs & Services → Library** → search "Google Sheets API" → **Enable**
+3. **APIs & Services → Credentials** → **Create Credentials → Service
+   Account** → give it any name → **Create and Continue** → skip the
+   optional steps → **Done**
+4. Click the new service account → **Keys** tab → **Add Key → Create new
+   key → JSON** → downloads a `.json` file
+5. Open that file — copy its **entire contents** as `GOOGLE_SERVICE_ACCOUNT_JSON`
+   (in `.env`, this needs to be on one line — most editors can do "minify" or
+   just leave the file's raw JSON as-is if your `.env` format allows multi-line
+   values)
+6. Inside that JSON file, find the `"client_email"` field — copy that email
+   address
+7. Create (or open) a Google Sheet, click **Share**, paste that service
+   account email in, give it **Editor** access
+8. Copy the Sheet's ID from its URL: `docs.google.com/spreadsheets/d/`**`THIS_PART`**`/edit`
+   → that's `GOOGLE_SHEET_ID`
+9. Add both env vars to `.env` (or Render's Environment tab)
+
+Leave both blank to skip this — the local CSV journal keeps working
+regardless, this is purely additive.
+
+## 9. Optional: give Claude your real Groww holdings (read-only)
 
 By default Claude only sees the alert itself (symbol, price, signal). You can
 optionally let it also see whether you already hold that stock and its live
@@ -116,7 +145,7 @@ orders, just adds context like "you already hold 10 shares of this at ₹X."
 4. Leave them blank any day you don't want this — the pipeline works fine
    without it, it just skips the portfolio context silently
 
-## 9. Optional: deploy to the cloud (no laptop needed)
+## 10. Optional: deploy to the cloud (no laptop needed)
 
 Everything above runs on your own machine — if you close your laptop or lose
 wifi, alerts stop working. To have it running all the time without babysitting

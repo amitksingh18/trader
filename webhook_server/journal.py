@@ -1,15 +1,15 @@
-"""Logs every alert + Claude's analysis to a local CSV trade journal.
+"""Logs every alert + Claude's analysis to a local CSV trade journal, and
+also to Google Sheets if configured (see sheets_journal.py).
 
-Starts as a plain CSV so there's zero extra setup (no API keys, no auth).
-Open journal.csv directly in Excel/Numbers/Google Sheets any time.
-
-To upgrade to live Google Sheets or Notion later: both need their own API
-credentials (a Google service account, or a Notion integration token) — that's
-a separate setup step, not something wired in by default here.
+The CSV write always happens — it's the reliable record with zero setup.
+The Google Sheets write is best-effort on top of that; if it's not
+configured or fails, the CSV entry still exists.
 """
 import csv
 from datetime import datetime, timezone
 from pathlib import Path
+
+from sheets_journal import log_to_sheets
 
 JOURNAL_PATH = Path(__file__).parent / "journal.csv"
 
@@ -45,3 +45,5 @@ def log_to_journal(payload: dict, analysis: dict) -> None:
             "target": analysis.get("target"),
             "reasoning": analysis.get("reasoning"),
         })
+
+    log_to_sheets(payload, analysis)
