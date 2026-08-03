@@ -6,6 +6,7 @@ your own API key from https://console.anthropic.com/).
 import json
 import logging
 import os
+import re
 from typing import Optional
 
 import anthropic
@@ -55,13 +56,30 @@ def analyze_alert(payload: dict, portfolio_context: Optional[dict] = None) -> di
             messages=[{"role": "user", "content": user_message}],
         )
         text = response.content[0].text
-        return json.loads(text)
+        return _parse_json_response(text)
     except json.JSONDecodeError:
         logger.exception("Claude did not return valid JSON: %s", text)
         return _fallback_analysis("Claude response was not valid JSON.")
     except Exception:
         logger.exception("Claude API call failed")
         return _fallback_analysis("Claude API call failed — check ANTHROPIC_API_KEY and logs.")
+
+
+def _parse_json_response(text: str) -> dict:
+    """Claude sometimes wraps JSON in ```json fences despite instructions not
+    to — strip those, then fall back to extracting the first {...} block."""
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
+        stripped = re.sub(r"\s*```$", "", stripped)
+
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", stripped, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        raise
 
 
 def _fallback_analysis(reason: str) -> dict:
