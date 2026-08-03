@@ -1,0 +1,39 @@
+// TradingView Pine Script — Moving Average crossover alert
+// Fires a webhook alert whenever the fast MA crosses the slow MA,
+// in the same JSON shape webhook_server/main.py expects.
+//
+// How to use:
+//   1. Open a chart on TradingView -> Pine Editor (bottom of screen) -> paste this -> Add to chart.
+//   2. Click the clock/alarm icon -> Create Alert -> Condition: this script's "MA Crossover Alert".
+//   3. Under "Notifications", enable Webhook URL and paste your server's public URL
+//      (e.g. https://your-ngrok-url.ngrok.app/webhook — see docs/webhook_pipeline_setup.md).
+//   4. Leave the alert message box on "{{strategy.order.alert_message}}" (default from this script).
+
+//@version=5
+indicator("MA Crossover Alert", overlay=true)
+
+fastLen = input.int(9, "Fast MA length")
+slowLen = input.int(50, "Slow MA length")
+
+fastMA = ta.sma(close, fastLen)
+slowMA = ta.sma(close, slowLen)
+
+plot(fastMA, color=color.blue, title="Fast MA")
+plot(slowMA, color=color.orange, title="Slow MA")
+
+bullishCross = ta.crossover(fastMA, slowMA)
+bearishCross = ta.crossunder(fastMA, slowMA)
+
+plotshape(bullishCross, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+plotshape(bearishCross, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small)
+
+// This JSON string is what gets sent to your webhook when the alert fires.
+// {{ticker}} and {{close}} are TradingView placeholders — it fills in the real
+// values at the moment the alert fires (message must be a fixed string here,
+// it can't reference live series values directly).
+// secret must match WEBHOOK_SECRET in your .env — replace REPLACE_ME below.
+buyMsg  = '{"symbol": "{{ticker}}", "price": {{close}}, "signal": "buy", "secret": "REPLACE_ME"}'
+sellMsg = '{"symbol": "{{ticker}}", "price": {{close}}, "signal": "sell", "secret": "REPLACE_ME"}'
+
+alertcondition(bullishCross, title="MA Crossover Alert - Buy", message=buyMsg)
+alertcondition(bearishCross, title="MA Crossover Alert - Sell", message=sellMsg)

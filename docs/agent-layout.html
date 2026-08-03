@@ -1,0 +1,73 @@
+<h2 class="sr-only">Layout of the trader project: data connectors feed vertical skill plugins, which back ten named agents grouped into four workflow categories, all gated by human review before output.</h2>
+<style>
+  .tier{border:0.5px solid var(--border);border-radius:12px;padding:var(--pad-lg);background:var(--surface-1)}
+  .tier-label{font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:2px}
+  .tier-sub{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12px;color:var(--text-secondary);background:var(--surface-2);border:0.5px solid var(--border);border-radius:999px;padding:5px 12px}
+  .flow{display:flex;justify-content:center;color:var(--text-muted);font-size:14px;padding:2px 0}
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cat-card{border:0.5px solid var(--border);border-radius:8px;padding:12px;background:var(--surface-2)}
+  .cat-title{font-size:12px;color:var(--text-secondary);margin-bottom:8px}
+  @media (max-width:480px){.cat-grid{grid-template-columns:1fr}}
+</style>
+<div style="display:flex;flex-direction:column;gap:2px">
+
+  <div class="tier" style="border-left:2px solid var(--border-accent)">
+    <div class="tier-label">Data connectors</div>
+    <div class="tier-sub">Market data, fundamentals, deal comps — need API credentials to activate</div>
+    <div class="chips">
+      <span class="chip">lseg</span>
+      <span class="chip">sp-global</span>
+    </div>
+  </div>
+
+  <div class="flow"><i class="ti ti-arrow-down"></i></div>
+
+  <div class="tier" style="border-left:2px solid var(--border-success)">
+    <div class="tier-label">Vertical skill plugins</div>
+    <div class="tier-sub">Typed slash commands, run directly in a session</div>
+    <div class="chips">
+      <span class="chip">financial-analysis · /dcf /lbo /comps</span>
+      <span class="chip">investment-banking · /cim /merger-model</span>
+      <span class="chip">equity-research · /initiate /thesis</span>
+      <span class="chip">private-equity · /ic-memo /dd-checklist</span>
+      <span class="chip">wealth-management · /client-review</span>
+      <span class="chip">fund-admin</span>
+      <span class="chip">operations</span>
+    </div>
+  </div>
+
+  <div class="flow"><i class="ti ti-arrow-down"></i></div>
+
+  <div class="tier">
+    <div class="tier-label">Named agents</div>
+    <div class="tier-sub">Specialist subagents, delegated to by workflow</div>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-title">Coverage &amp; advisory</div>
+        <div class="chips"><span class="chip">pitch-agent</span><span class="chip">meeting-prep-agent</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-title">Research &amp; modeling</div>
+        <div class="chips"><span class="chip">market-researcher</span><span class="chip">earnings-reviewer</span><span class="chip">model-builder</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-title">Fund ops &amp; reporting</div>
+        <div class="chips"><span class="chip">valuation-reviewer</span><span class="chip">gl-reconciler</span><span class="chip">month-end-closer</span><span class="chip">statement-auditor</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-title">Operations</div>
+        <div class="chips"><span class="chip">kyc-screener</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow"><i class="ti ti-arrow-down"></i></div>
+
+  <div class="tier" style="border-left:2px solid var(--border-warning)">
+    <div class="tier-label">Human review &amp; sign-off</div>
+    <div class="tier-sub">Decks, models, memos, LP reports — drafts only, no trades executed, no risk bound, no advice given</div>
+  </div>
+
+</div>
