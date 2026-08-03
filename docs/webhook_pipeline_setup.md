@@ -101,7 +101,22 @@ curl -X POST http://localhost:8080/webhook \
 - A Telegram message on your phone within a few seconds
 - A new row in `webhook_server/journal.csv`
 
-## 8. Optional: deploy to the cloud (no laptop needed)
+## 8. Optional: give Claude your real Groww holdings (read-only)
+
+By default Claude only sees the alert itself (symbol, price, signal). You can
+optionally let it also see whether you already hold that stock and its live
+price from your actual Groww account — this is **read-only**, it never places
+orders, just adds context like "you already hold 10 shares of this at ₹X."
+
+1. Go to https://groww.in/trade-api/api-keys and generate `GROWW_API_KEY` /
+   `GROWW_API_SECRET`
+2. **Note:** these expire daily — you'll need to regenerate them each trading
+   morning before the pipeline can use this feature that day
+3. Add both to `.env` (or Render's Environment tab if deployed)
+4. Leave them blank any day you don't want this — the pipeline works fine
+   without it, it just skips the portfolio context silently
+
+## 9. Optional: deploy to the cloud (no laptop needed)
 
 Everything above runs on your own machine — if you close your laptop or lose
 wifi, alerts stop working. To have it running all the time without babysitting

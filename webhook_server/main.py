@@ -16,11 +16,13 @@ human decision between every alert and real money moving, on purpose.
 import logging
 import os
 from pathlib import Path
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 
 from claude_analysis import analyze_alert
+from groww_data import get_portfolio_context
 from journal import log_to_journal
 from telegram_notify import send_telegram_message
 
@@ -53,9 +55,10 @@ async def receive_alert(request: Request):
     if missing:
         raise HTTPException(status_code=400, detail=f"Missing required fields: {missing}")
 
-    analysis = analyze_alert(payload)
+    portfolio_context = get_portfolio_context(payload["symbol"])
+    analysis = analyze_alert(payload, portfolio_context)
 
-    message = format_message(payload, analysis)
+    message = format_message(payload, analysis, portfolio_context)
     send_telegram_message(message)
 
     log_to_journal(payload, analysis)
@@ -63,7 +66,7 @@ async def receive_alert(request: Request):
     return {"status": "processed", "analysis": analysis}
 
 
-def format_message(payload: dict, analysis: dict) -> str:
+def format_message(payload: dict, analysis: dict, portfolio_context: Optional[dict] = None) -> str:
     lines = [
         f"📊 {payload['symbol']} — {payload['signal'].upper()}",
         f"Price: {payload['price']}",
@@ -75,8 +78,13 @@ def format_message(payload: dict, analysis: dict) -> str:
         "",
         analysis.get("reasoning", "No reasoning returned."),
         "",
-        "⚠️ This is analysis only. No order has been placed. Decide and trade manually.",
     ]
+    if portfolio_context and portfolio_context.get("available"):
+        if portfolio_context.get("already_holding"):
+            lines += ["📦 You already hold this — see reasoning above for how that factored in.", ""]
+        else:
+            lines += ["📦 You don't currently hold this symbol.", ""]
+    lines.append("⚠️ This is analysis only. No order has been placed. Decide and trade manually.")
     return "\n".join(lines)
 
 

@@ -6,6 +6,7 @@ your own API key from https://console.anthropic.com/).
 import json
 import logging
 import os
+from typing import Optional
 
 import anthropic
 
@@ -33,11 +34,18 @@ against-the-trend entry).
 Return ONLY the JSON object, no other text."""
 
 
-def analyze_alert(payload: dict) -> dict:
+def analyze_alert(payload: dict, portfolio_context: Optional[dict] = None) -> dict:
     user_message = (
         "Analyze this TradingView alert:\n"
         f"{json.dumps(payload, indent=2)}"
     )
+    if portfolio_context and portfolio_context.get("available"):
+        user_message += (
+            "\n\nReal portfolio context for this symbol (read-only, from the "
+            "trader's actual Groww account — factor this into your reasoning, "
+            "e.g. whether this adds to an existing position):\n"
+            f"{json.dumps(portfolio_context, indent=2)}"
+        )
 
     try:
         response = client.messages.create(

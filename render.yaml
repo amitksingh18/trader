@@ -15,3 +15,7 @@ services:
         sync: false
       - key: WEBHOOK_SECRET
         sync: false
+      - key: GROWW_API_KEY
+        sync: false
+      - key: GROWW_API_SECRET
+        sync: false
