@@ -3,10 +3,9 @@
 Never places orders. Only used to give Claude real context (e.g. "you already
 hold 10 shares of this at an average price of X") when analyzing an alert.
 
-Uses the TOTP auth flow (GROWW_TOTP_TOKEN + GROWW_TOTP_SECRET) — no expiry,
-unlike the API key/secret flow which resets daily. Get these from
-https://groww.in/trade-api/api-keys (dropdown next to "Generate API key" ->
-"Generate TOTP token").
+Uses the API key/secret auth flow (GROWW_API_KEY + GROWW_API_SECRET). Get
+these from https://groww.in/trade-api/api-keys ("Generate API key"). Note:
+these reset daily at 6 AM — need refreshing each trading day.
 
 Note: as of Aug 2026 this also requires the calling server's IP to be
 registered with Groww (see "Update static IP" on that same page) — this is
@@ -16,13 +15,12 @@ the registered IP once every 7 days. See docs/webhook_pipeline_setup.md.
 import logging
 import os
 
-import pyotp
 from growwapi import GrowwAPI
 
 logger = logging.getLogger("tv-webhook")
 
-TOTP_TOKEN = os.environ.get("GROWW_TOTP_TOKEN")
-TOTP_SECRET = os.environ.get("GROWW_TOTP_SECRET")
+API_KEY = os.environ.get("GROWW_API_KEY")
+API_SECRET = os.environ.get("GROWW_API_SECRET")
 
 _client = None
 
@@ -32,12 +30,11 @@ def _get_client():
     if _client is not None:
         return _client
 
-    if not TOTP_TOKEN or not TOTP_SECRET:
+    if not API_KEY or not API_SECRET:
         return None
 
     try:
-        totp = pyotp.TOTP(TOTP_SECRET).now()
-        access_token = GrowwAPI.get_access_token(api_key=TOTP_TOKEN, totp=totp)
+        access_token = GrowwAPI.get_access_token(api_key=API_KEY, secret=API_SECRET)
         _client = GrowwAPI(access_token)
         return _client
     except Exception:
