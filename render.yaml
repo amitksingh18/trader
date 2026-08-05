@@ -15,9 +15,9 @@ services:
         sync: false
       - key: WEBHOOK_SECRET
         sync: false
-      - key: GROWW_API_KEY
+      - key: GROWW_TOTP_TOKEN
         sync: false
-      - key: GROWW_API_SECRET
+      - key: GROWW_TOTP_SECRET
         sync: false
       - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false

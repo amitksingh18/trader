@@ -137,13 +137,21 @@ optionally let it also see whether you already hold that stock and its live
 price from your actual Groww account — this is **read-only**, it never places
 orders, just adds context like "you already hold 10 shares of this at ₹X."
 
-1. Go to https://groww.in/trade-api/api-keys and generate `GROWW_API_KEY` /
-   `GROWW_API_SECRET`
-2. **Note:** these expire daily — you'll need to regenerate them each trading
-   morning before the pipeline can use this feature that day
+1. Go to https://groww.in/trade-api/api-keys → click the dropdown next to
+   "Generate API key" → **"Generate TOTP token"** → generate `GROWW_TOTP_TOKEN`
+   / `GROWW_TOTP_SECRET`
+2. Unlike the plain API key/secret flow, **TOTP credentials don't expire** —
+   no daily regeneration needed
 3. Add both to `.env` (or Render's Environment tab if deployed)
-4. Leave them blank any day you don't want this — the pipeline works fine
+4. Leave them blank if you don't want this feature — the pipeline works fine
    without it, it just skips the portfolio context silently
+5. **Known blocker as of Aug 2026:** Groww also requires the calling
+   server's IP to be registered ("Update static IP" on the same page), and
+   only lets you change that once every 7 days. Render's free tier doesn't
+   have a fixed outbound IP, so this feature is currently non-functional
+   when deployed — it does work if you run the check locally from your own
+   machine (see `scripts/append_position_log.py`), since your home IP is
+   already the registered one.
 
 ## 10. Optional: deploy to the cloud (no laptop needed)
 
