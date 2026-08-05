@@ -35,17 +35,25 @@ against-the-trend entry).
 Return ONLY the JSON object, no other text."""
 
 
-def analyze_alert(payload: dict, portfolio_context: Optional[dict] = None) -> dict:
+def analyze_alert(payload: dict, portfolio_contexts: Optional[dict] = None) -> dict:
+    """portfolio_contexts: dict of {broker_name: context_dict}, e.g.
+    {"groww": {...}, "zerodha": {...}} — each optional, each independently
+    available or not."""
     user_message = (
         "Analyze this TradingView alert:\n"
         f"{json.dumps(payload, indent=2)}"
     )
-    if portfolio_context and portfolio_context.get("available"):
+    available_contexts = {
+        broker: ctx for broker, ctx in (portfolio_contexts or {}).items()
+        if ctx and ctx.get("available")
+    }
+    if available_contexts:
         user_message += (
             "\n\nReal portfolio context for this symbol (read-only, from the "
-            "trader's actual Groww account — factor this into your reasoning, "
-            "e.g. whether this adds to an existing position):\n"
-            f"{json.dumps(portfolio_context, indent=2)}"
+            "trader's actual broker accounts — factor this into your reasoning, "
+            "e.g. whether this adds to an existing position, and note if the "
+            "same symbol shows up differently across brokers):\n"
+            f"{json.dumps(available_contexts, indent=2)}"
         )
 
     try:

@@ -22,9 +22,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 
 from claude_analysis import analyze_alert
-from groww_data import get_portfolio_context
+from groww_data import get_portfolio_context as get_groww_context
 from journal import log_to_journal
 from telegram_notify import send_telegram_message
+from zerodha_data import get_portfolio_context as get_zerodha_context
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -55,10 +56,13 @@ async def receive_alert(request: Request):
     if missing:
         raise HTTPException(status_code=400, detail=f"Missing required fields: {missing}")
 
-    portfolio_context = get_portfolio_context(payload["symbol"])
-    analysis = analyze_alert(payload, portfolio_context)
+    portfolio_contexts = {
+        "groww": get_groww_context(payload["symbol"]),
+        "zerodha": get_zerodha_context(payload["symbol"]),
+    }
+    analysis = analyze_alert(payload, portfolio_contexts)
 
-    message = format_message(payload, analysis, portfolio_context)
+    message = format_message(payload, analysis, portfolio_contexts)
     send_telegram_message(message)
 
     log_to_journal(payload, analysis)
@@ -66,7 +70,7 @@ async def receive_alert(request: Request):
     return {"status": "processed", "analysis": analysis}
 
 
-def format_message(payload: dict, analysis: dict, portfolio_context: Optional[dict] = None) -> str:
+def format_message(payload: dict, analysis: dict, portfolio_contexts: Optional[dict] = None) -> str:
     lines = [
         f"📊 {payload['symbol']} — {payload['signal'].upper()}",
         f"Price: {payload['price']}",
@@ -79,11 +83,14 @@ def format_message(payload: dict, analysis: dict, portfolio_context: Optional[di
         analysis.get("reasoning", "No reasoning returned."),
         "",
     ]
-    if portfolio_context and portfolio_context.get("available"):
-        if portfolio_context.get("already_holding"):
-            lines += ["📦 You already hold this — see reasoning above for how that factored in.", ""]
+    for broker, ctx in (portfolio_contexts or {}).items():
+        if not ctx or not ctx.get("available"):
+            continue
+        if ctx.get("already_holding"):
+            lines.append(f"📦 {broker.capitalize()}: you already hold this.")
         else:
-            lines += ["📦 You don't currently hold this symbol.", ""]
+            lines.append(f"📦 {broker.capitalize()}: you don't currently hold this.")
+    lines.append("")
     lines.append("⚠️ This is analysis only. No order has been placed. Decide and trade manually.")
     return "\n".join(lines)
 
