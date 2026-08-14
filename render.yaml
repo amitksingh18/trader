@@ -33,6 +33,8 @@ services:
         sync: false
       - key: TWILIO_FROM_NUMBER
         sync: false
+      - key: TWILIO_SMS_SENDER_ID
+        sync: false
       - key: TWILIO_WHATSAPP_FROM
         sync: false
       - key: TWILIO_TO_NUMBER

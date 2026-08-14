@@ -185,6 +185,35 @@ Each channel is independent — configure only the ones you want:
 6. Leave any of these blank to skip that channel — the pipeline logs a
    warning and carries on; Telegram and the CSV journal are unaffected.
 
+### Making SMS show a name instead of your number
+
+By default, `TWILIO_FROM_NUMBER` is what shows up as the sender — a phone
+number. To have the SMS show a text name instead (e.g. `TRADER`), the way
+a company's OTP/notification texts do, set `TWILIO_SMS_SENDER_ID` to that
+name (3-11 letters/digits, no spaces) instead of relying on
+`TWILIO_FROM_NUMBER`.
+
+**This is not just an env var** — it needs real registration before it'll
+actually deliver:
+
+1. Register the Alphanumeric Sender ID with Twilio — Console → Messaging →
+   Senders → Alphanumeric Sender IDs → Create new Sender ID. Approval can
+   take a few hours to a few days depending on destination country.
+2. **If texting Indian numbers:** India additionally requires **DLT
+   (Distributed Ledger Technology) registration** — you (or your business)
+   register as an entity on a DLT platform (e.g. your telecom operator's
+   portal, or an aggregator like Twilio partners with), register the
+   specific sender "header" (your chosen name) and the exact message
+   template being sent, and get both approved. This is a multi-day
+   real-world compliance process, not something achievable purely from
+   this codebase — Twilio's guide:
+   https://www.twilio.com/docs/sms/send-messages#india
+3. Until that registration is complete and approved, Indian carriers
+   silently drop unregistered alphanumeric SMS — you won't get an error,
+   the message just never arrives. Leave `TWILIO_SMS_SENDER_ID` blank and
+   the pipeline falls back to sending from `TWILIO_FROM_NUMBER` (a normal
+   phone number) instead, which needs no such registration.
+
 ## 11. Optional: deploy to the cloud (no laptop needed)
 
 Everything above runs on your own machine — if you close your laptop or lose
