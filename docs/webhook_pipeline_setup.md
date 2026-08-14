@@ -153,7 +153,39 @@ orders, just adds context like "you already hold 10 shares of this at ₹X."
    machine (see `scripts/append_position_log.py`), since your home IP is
    already the registered one.
 
-## 10. Optional: deploy to the cloud (no laptop needed)
+## 10. Optional: SMS, WhatsApp, and phone call alerts (Twilio)
+
+By default alerts only go to Telegram. You can additionally get an SMS, a
+WhatsApp message, and a real phone call (that reads the alert aloud) for
+every signal, via [Twilio](https://www.twilio.com/try-twilio).
+
+**Heads up:** there's no such thing as a bot placing a native WhatsApp voice
+call — WhatsApp's Business API (which Twilio uses) is messaging-only, no
+provider exposes that as an API. "Calling" here means an actual phone call
+over the regular phone network, with the alert read out by text-to-speech —
+that's the closest real equivalent, and arguably more useful for something
+you want to notice immediately.
+
+Each channel is independent — configure only the ones you want:
+
+1. Sign up at https://www.twilio.com/try-twilio (free trial includes some
+   credit). From the console dashboard, copy your **Account SID** and
+   **Auth Token** into `.env` as `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`.
+2. **For SMS and phone calls:** get a Twilio phone number (trial accounts
+   get one free) — Console → Phone Numbers → Buy a number. Put it in
+   `TWILIO_FROM_NUMBER` (E.164 format, e.g. `+14155551234`).
+3. **For WhatsApp:** Console → Messaging → Try it out → Send a WhatsApp
+   message, join the sandbox by sending the given code to the given number
+   from your own WhatsApp. Put the sandbox number in `TWILIO_WHATSAPP_FROM`.
+4. Put your own phone number in `TWILIO_TO_NUMBER` (E.164, e.g.
+   `+919876543210`) — SMS, WhatsApp, and the call all go here.
+5. On a trial account, `TWILIO_TO_NUMBER` must first be verified in the
+   Twilio console (Console → Phone Numbers → Verified Caller IDs) before
+   Twilio will send to it.
+6. Leave any of these blank to skip that channel — the pipeline logs a
+   warning and carries on; Telegram and the CSV journal are unaffected.
+
+## 11. Optional: deploy to the cloud (no laptop needed)
 
 Everything above runs on your own machine — if you close your laptop or lose
 wifi, alerts stop working. To have it running all the time without babysitting

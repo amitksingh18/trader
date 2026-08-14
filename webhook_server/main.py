@@ -25,6 +25,7 @@ from claude_analysis import analyze_alert
 from groww_data import get_portfolio_context as get_groww_context
 from journal import log_to_journal
 from telegram_notify import send_telegram_message
+from twilio_notify import make_call, send_sms, send_whatsapp_message
 from zerodha_data import get_portfolio_context as get_zerodha_context
 
 load_dotenv(Path(__file__).parent / ".env")
@@ -64,6 +65,9 @@ async def receive_alert(request: Request):
 
     message = format_message(payload, analysis, portfolio_contexts)
     send_telegram_message(message)
+    send_sms(message)
+    send_whatsapp_message(message)
+    make_call(format_call_summary(payload, analysis))
 
     log_to_journal(payload, analysis)
 
@@ -93,6 +97,16 @@ def format_message(payload: dict, analysis: dict, portfolio_contexts: Optional[d
     lines.append("")
     lines.append("⚠️ This is analysis only. No order has been placed. Decide and trade manually.")
     return "\n".join(lines)
+
+
+def format_call_summary(payload: dict, analysis: dict) -> str:
+    """Short version for the phone call — text-to-speech, so keep it to one
+    or two sentences rather than reading the full reasoning aloud."""
+    return (
+        f"Trading alert for {payload['symbol']}, signal {payload['signal']}, "
+        f"price {payload['price']}. Confidence {analysis.get('confidence', 'N/A')} out of 10. "
+        "This is analysis only, no order has been placed."
+    )
 
 
 if __name__ == "__main__":
